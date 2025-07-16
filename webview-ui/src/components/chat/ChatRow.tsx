@@ -26,10 +26,10 @@ import CodeAccordian from "../common/CodeAccordian"
 import CodeBlock from "../common/CodeBlock"
 import MarkdownBlock from "../common/MarkdownBlock"
 import { ReasoningBlock } from "./ReasoningBlock"
-import Thumbnails from "../common/Thumbnails"
 import McpResourceRow from "../mcp/McpResourceRow"
 
 import { Mention } from "./Mention"
+import MediaThumbnails from "../common/MediaThumbnails"
 import { CheckpointSaved } from "./checkpoints/CheckpointSaved"
 import { FollowUpSuggest } from "./FollowUpSuggest"
 import { BatchFilePermission } from "./BatchFilePermission"
@@ -1080,7 +1080,7 @@ export const ChatRowContent = ({
 								</div>
 							)}
 							{!isEditing && message.images && message.images.length > 0 && (
-								<Thumbnails images={message.images} style={{ marginTop: "8px" }} />
+								<MediaThumbnails mediaItems={message.images} style={{ marginTop: "8px" }} />
 							)}
 						</div>
 					)
