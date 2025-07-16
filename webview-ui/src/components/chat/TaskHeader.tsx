@@ -14,7 +14,7 @@ import { Button, StandardTooltip } from "@src/components/ui"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useSelectedModel } from "@/components/ui/hooks/useSelectedModel"
 
-import Thumbnails from "../common/Thumbnails"
+import MediaThumbnails from "../common/MediaThumbnails"
 
 import { TaskActions } from "./TaskActions"
 import { ShareButton } from "./ShareButton"
@@ -142,7 +142,7 @@ const TaskHeader = ({
 								<Mention text={task.text} />
 							</div>
 						</div>
-						{task.images && task.images.length > 0 && <Thumbnails images={task.images} />}
+						{task.images && task.images.length > 0 && <MediaThumbnails mediaItems={task.images} />}
 
 						<div className="flex flex-col gap-1">
 							{isTaskExpanded && contextWindow > 0 && (

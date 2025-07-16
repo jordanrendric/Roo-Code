@@ -53,6 +53,16 @@
 			"esbuild": ">=0.25.0",
 			"undici": ">=5.29.0",
 			"brace-expansion": ">=2.0.2"
-		}
+		},
+		"onlyBuiltDependencies": [
+			"@tailwindcss/oxide",
+			"@vscode/vsce-sign",
+			"better-sqlite3",
+			"core-js",
+			"esbuild",
+			"keytar",
+			"puppeteer-chromium-resolver",
+			"sharp"
+		]
 	}
 }

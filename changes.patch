@@ -1,0 +1,340 @@
+diff --git a/webview-ui/src/components/chat/ChatRow.tsx b/webview-ui/src/components/chat/ChatRow.tsx
+index c508f7e9..abdd9ae3 100644
+--- a/webview-ui/src/components/chat/ChatRow.tsx
++++ b/webview-ui/src/components/chat/ChatRow.tsx
+@@ -26,10 +26,10 @@ import CodeAccordian from "../common/CodeAccordian"
+ import CodeBlock from "../common/CodeBlock"
+ import MarkdownBlock from "../common/MarkdownBlock"
+ import { ReasoningBlock } from "./ReasoningBlock"
+-import Thumbnails from "../common/Thumbnails"
+ import McpResourceRow from "../mcp/McpResourceRow"
+ 
+ import { Mention } from "./Mention"
++import MediaThumbnails from "../common/MediaThumbnails"
+ import { CheckpointSaved } from "./checkpoints/CheckpointSaved"
+ import { FollowUpSuggest } from "./FollowUpSuggest"
+ import { BatchFilePermission } from "./BatchFilePermission"
+@@ -1080,7 +1080,7 @@ export const ChatRowContent = ({
+ 								</div>
+ 							)}
+ 							{!isEditing && message.images && message.images.length > 0 && (
+-								<Thumbnails images={message.images} style={{ marginTop: "8px" }} />
++								<MediaThumbnails mediaItems={message.images} style={{ marginTop: "8px" }} />
+ 							)}
+ 						</div>
+ 					)
+diff --git a/webview-ui/src/components/chat/ChatTextArea.tsx b/webview-ui/src/components/chat/ChatTextArea.tsx
+index 7b404ddc..4484bea0 100644
+--- a/webview-ui/src/components/chat/ChatTextArea.tsx
++++ b/webview-ui/src/components/chat/ChatTextArea.tsx
+@@ -21,9 +21,9 @@ import {
+ import { convertToMentionPath } from "@/utils/path-mentions"
+ import { SelectDropdown, DropdownOptionType, Button, StandardTooltip } from "@/components/ui"
+ 
+-import Thumbnails from "../common/Thumbnails"
+ import ModeSelector from "./ModeSelector"
+ import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
++import MediaThumbnails from "../common/MediaThumbnails"
+ import ContextMenu from "./ContextMenu"
+ import { VolumeX, Pin, Check, Image, WandSparkles, SendHorizontal } from "lucide-react"
+ import { IndexingStatusBadge } from "./IndexingStatusBadge"
+@@ -36,8 +36,8 @@ interface ChatTextAreaProps {
+ 	sendingDisabled: boolean
+ 	selectApiConfigDisabled: boolean
+ 	placeholderText: string
+-	selectedImages: string[]
+-	setSelectedImages: React.Dispatch<React.SetStateAction<string[]>>
++	selectedMedia: string[]
++	setSelectedMedia: React.Dispatch<React.SetStateAction<string[]>>
+ 	onSend: () => void
+ 	onSelectImages: () => void
+ 	shouldDisableImages: boolean
+@@ -45,6 +45,7 @@ interface ChatTextAreaProps {
+ 	mode: Mode
+ 	setMode: (value: Mode) => void
+ 	modeShortcutText: string
++	acceptedFileTypes: string[]
+ }
+ 
+ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
+@@ -55,8 +56,8 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
+ 			sendingDisabled,
+ 			selectApiConfigDisabled,
+ 			placeholderText,
+-			selectedImages,
+-			setSelectedImages,
++			selectedMedia,
++			setSelectedMedia,
+ 			onSend,
+ 			onSelectImages,
+ 			shouldDisableImages,
+@@ -64,6 +65,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
+ 			mode,
+ 			setMode,
+ 			modeShortcutText,
++			acceptedFileTypes,
+ 		},
+ 		ref,
+ 	) => {
+@@ -592,11 +594,9 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
+ 					return
+ 				}
+ 
+-				const acceptedTypes = ["png", "jpeg", "webp"]
+-
+ 				const imageItems = Array.from(items).filter((item) => {
+ 					const [type, subtype] = item.type.split("/")
+-					return type === "image" && acceptedTypes.includes(subtype)
++					return (type === "image" || type === "video") && acceptedFileTypes.includes(subtype)
+ 				})
+ 
+ 				if (!shouldDisableImages && imageItems.length > 0) {
+@@ -631,13 +631,13 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
+ 					const dataUrls = imageDataArray.filter((dataUrl): dataUrl is string => dataUrl !== null)
+ 
+ 					if (dataUrls.length > 0) {
+-						setSelectedImages((prevImages) => [...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE))
++						setSelectedMedia((prevItems) => [...prevItems, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE))
+ 					} else {
+ 						console.warn(t("chat:noValidImages"))
+ 					}
+ 				}
+ 			},
+-			[shouldDisableImages, setSelectedImages, cursorPosition, setInputValue, inputValue, t],
++			[shouldDisableImages, setSelectedMedia, cursorPosition, setInputValue, inputValue, t],
+ 		)
+ 
+ 		const handleMenuMouseDown = useCallback(() => {
+@@ -726,11 +726,9 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
+ 				const files = Array.from(e.dataTransfer.files)
+ 
+ 				if (files.length > 0) {
+-					const acceptedTypes = ["png", "jpeg", "webp"]
+-
+ 					const imageFiles = files.filter((file) => {
+ 						const [type, subtype] = file.type.split("/")
+-						return type === "image" && acceptedTypes.includes(subtype)
++						return (type === "image" || type === "video") && acceptedFileTypes.includes(subtype)
+ 					})
+ 
+ 					if (!shouldDisableImages && imageFiles.length > 0) {
+@@ -756,8 +754,8 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
+ 						const dataUrls = imageDataArray.filter((dataUrl): dataUrl is string => dataUrl !== null)
+ 
+ 						if (dataUrls.length > 0) {
+-							setSelectedImages((prevImages) =>
+-								[...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE),
++							setSelectedMedia((prevItems) =>
++								[...prevItems, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE),
+ 							)
+ 
+ 							if (typeof vscode !== "undefined") {
+@@ -777,7 +775,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
+ 				setCursorPosition,
+ 				setIntendedCursorPosition,
+ 				shouldDisableImages,
+-				setSelectedImages,
++				setSelectedMedia,
+ 				t,
+ 			],
+ 		)
+@@ -1031,10 +1029,10 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
+ 					</div>
+ 				</div>
+ 
+-				{selectedImages.length > 0 && (
+-					<Thumbnails
+-						images={selectedImages}
+-						setImages={setSelectedImages}
++				{selectedMedia.length > 0 && (
++					<MediaThumbnails
++						mediaItems={selectedMedia}
++						setMediaItems={setSelectedMedia}
+ 						style={{
+ 							left: "16px",
+ 							zIndex: 2,
+diff --git a/webview-ui/src/components/chat/ChatView.tsx b/webview-ui/src/components/chat/ChatView.tsx
+index 0f0b056f..d5b5b66a 100644
+--- a/webview-ui/src/components/chat/ChatView.tsx
++++ b/webview-ui/src/components/chat/ChatView.tsx
+@@ -150,7 +150,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
+ 	const [inputValue, setInputValue] = useState("")
+ 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
+ 	const [sendingDisabled, setSendingDisabled] = useState(false)
+-	const [selectedImages, setSelectedImages] = useState<string[]>([])
++	const [selectedMedia, setSelectedMedia] = useState<string[]>([])
+ 
+ 	// we need to hold on to the ask because useEffect > lastMessage will always let us know when an ask comes in and handle it, but by the time handleMessage is called, the last message might not be the ask anymore (it could be a say that followed)
+ 	const [clineAsk, setClineAsk] = useState<ClineAsk | undefined>(undefined)
+@@ -393,7 +393,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
+ 						case "api_req_started":
+ 							if (secondLastMessage?.ask === "command_output") {
+ 								setSendingDisabled(true)
+-								setSelectedImages([])
++								setSelectedMedia([])
+ 								setClineAsk(undefined)
+ 								setEnableButtons(false)
+ 							}
+@@ -526,7 +526,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
+ 		// Only reset message-specific state, preserving mode.
+ 		setInputValue("")
+ 		setSendingDisabled(true)
+-		setSelectedImages([])
++		setSelectedMedia([])
+ 		setClineAsk(undefined)
+ 		setEnableButtons(false)
+ 		// Do not reset mode here as it should persist.
+@@ -586,9 +586,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
+ 			}
+ 
+ 			setInputValue(newValue)
+-			setSelectedImages([...selectedImages, ...images])
++			setSelectedMedia([...selectedMedia, ...images])
+ 		},
+-		[inputValue, selectedImages],
++		[inputValue, selectedMedia],
+ 	)
+ 
+ 	const startNewTask = useCallback(() => vscode.postMessage({ type: "clearTask" }), [])
+@@ -624,7 +624,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
+ 					}
+ 					// Clear input state after sending
+ 					setInputValue("")
+-					setSelectedImages([])
++					setSelectedMedia([])
+ 					break
+ 				case "completion_result":
+ 				case "resume_completed_task":
+@@ -680,7 +680,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
+ 					}
+ 					// Clear input state after sending
+ 					setInputValue("")
+-					setSelectedImages([])
++					setSelectedMedia([])
+ 					break
+ 				case "command_output":
+ 					vscode.postMessage({ type: "terminalOperation", terminalOperation: "abort" })
+@@ -699,8 +699,22 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
+ 
+ 	const selectImages = useCallback(() => vscode.postMessage({ type: "selectImages" }), [])
+ 
++	const acceptedFileTypes = useMemo(() => {
++		const modelId = apiConfiguration?.apiModelId
++		const isGeminiPro = modelId?.includes("gemini-2.5-pro")
++		const isGeminiFlash = modelId?.includes("gemini-1.5-flash")
++
++		if ((isGeminiPro || isGeminiFlash) && model?.supportsImages) {
++			return ["png", "jpeg", "webp", "heic", "heif", "mp4", "mov", "avi", "wmv", "flv", "webm"]
++		}
++		if (model?.supportsImages) {
++			return ["png", "jpeg", "webp", "heic", "heif"]
++		}
++		return []
++	}, [apiConfiguration, model])
++
+ 	const shouldDisableImages =
+-		!model?.supportsImages || sendingDisabled || selectedImages.length >= MAX_IMAGES_PER_MESSAGE
++		!model?.supportsImages || sendingDisabled || selectedMedia.length >= MAX_IMAGES_PER_MESSAGE
+ 
+ 	const handleMessage = useCallback(
+ 		(e: MessageEvent) => {
+@@ -722,8 +736,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
+ 				case "selectedImages":
+ 					const newImages = message.images ?? []
+ 					if (newImages.length > 0) {
+-						setSelectedImages((prevImages) =>
+-							[...prevImages, ...newImages].slice(0, MAX_IMAGES_PER_MESSAGE),
++						setSelectedMedia((prevItems) =>
++							[...prevItems, ...newImages].slice(0, MAX_IMAGES_PER_MESSAGE),
+ 						)
+ 					}
+ 					break
+@@ -1595,9 +1609,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
+ 	useImperativeHandle(ref, () => ({
+ 		acceptInput: () => {
+ 			if (enableButtons && primaryButtonText) {
+-				handlePrimaryButtonClick(inputValue, selectedImages)
+-			} else if (!sendingDisabled && !isProfileDisabled && (inputValue.trim() || selectedImages.length > 0)) {
+-				handleSendMessage(inputValue, selectedImages)
++				handlePrimaryButtonClick(inputValue, selectedMedia)
++			} else if (!sendingDisabled && !isProfileDisabled && (inputValue.trim() || selectedMedia.length > 0)) {
++				handleSendMessage(inputValue, selectedMedia)
+ 			}
+ 		},
+ 	}))
+@@ -1797,7 +1811,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
+ 												appearance="primary"
+ 												disabled={!enableButtons}
+ 												className={secondaryButtonText ? "flex-1 mr-[6px]" : "flex-[2] mr-0"}
+-												onClick={() => handlePrimaryButtonClick(inputValue, selectedImages)}>
++												onClick={() => handlePrimaryButtonClick(inputValue, selectedMedia)}>
+ 												{primaryButtonText}
+ 											</VSCodeButton>
+ 										</StandardTooltip>
+@@ -1819,7 +1833,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
+ 												appearance="secondary"
+ 												disabled={!enableButtons && !(isStreaming && !didClickCancel)}
+ 												className={isStreaming ? "flex-[2] ml-0" : "flex-1 ml-[6px]"}
+-												onClick={() => handleSecondaryButtonClick(inputValue, selectedImages)}>
++												onClick={() => handleSecondaryButtonClick(inputValue, selectedMedia)}>
+ 												{isStreaming ? t("chat:cancel.title") : secondaryButtonText}
+ 											</VSCodeButton>
+ 										</StandardTooltip>
+@@ -1838,11 +1852,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
+ 				sendingDisabled={sendingDisabled || isProfileDisabled}
+ 				selectApiConfigDisabled={sendingDisabled && clineAsk !== "api_req_failed"}
+ 				placeholderText={placeholderText}
+-				selectedImages={selectedImages}
+-				setSelectedImages={setSelectedImages}
+-				onSend={() => handleSendMessage(inputValue, selectedImages)}
++				selectedMedia={selectedMedia}
++				setSelectedMedia={setSelectedMedia}
++				onSend={() => handleSendMessage(inputValue, selectedMedia)}
+ 				onSelectImages={selectImages}
+ 				shouldDisableImages={shouldDisableImages}
++				acceptedFileTypes={acceptedFileTypes}
+ 				onHeightChange={() => {
+ 					if (isAtBottom) {
+ 						scrollToBottomAuto()
+diff --git a/webview-ui/src/components/chat/TaskHeader.tsx b/webview-ui/src/components/chat/TaskHeader.tsx
+index 1896df48..dd3bd1fb 100644
+--- a/webview-ui/src/components/chat/TaskHeader.tsx
++++ b/webview-ui/src/components/chat/TaskHeader.tsx
+@@ -14,7 +14,7 @@ import { Button, StandardTooltip } from "@src/components/ui"
+ import { useExtensionState } from "@src/context/ExtensionStateContext"
+ import { useSelectedModel } from "@/components/ui/hooks/useSelectedModel"
+ 
+-import Thumbnails from "../common/Thumbnails"
++import MediaThumbnails from "../common/MediaThumbnails"
+ 
+ import { TaskActions } from "./TaskActions"
+ import { ShareButton } from "./ShareButton"
+@@ -142,7 +142,7 @@ const TaskHeader = ({
+ 								<Mention text={task.text} />
+ 							</div>
+ 						</div>
+-						{task.images && task.images.length > 0 && <Thumbnails images={task.images} />}
++						{task.images && task.images.length > 0 && <MediaThumbnails mediaItems={task.images} />}
+ 
+ 						<div className="flex flex-col gap-1">
+ 							{isTaskExpanded && contextWindow > 0 && (
+diff --git a/webview-ui/src/components/chat/__tests__/ChatTextArea.spec.tsx b/webview-ui/src/components/chat/__tests__/ChatTextArea.spec.tsx
+index 97342020..be7a56cb 100644
+--- a/webview-ui/src/components/chat/__tests__/ChatTextArea.spec.tsx
++++ b/webview-ui/src/components/chat/__tests__/ChatTextArea.spec.tsx
+@@ -54,12 +54,13 @@ describe("ChatTextArea", () => {
+ 		onSelectImages: vi.fn(),
+ 		shouldDisableImages: false,
+ 		placeholderText: "Type a message...",
+-		selectedImages: [],
+-		setSelectedImages: vi.fn(),
++		selectedMedia: [],
++		setSelectedMedia: vi.fn(),
+ 		onHeightChange: vi.fn(),
+ 		mode: defaultModeSlug,
+ 		setMode: vi.fn(),
+ 		modeShortcutText: "(⌘. for next mode)",
++		acceptedFileTypes: [],
+ 	}
+ 
+ 	beforeEach(() => {
