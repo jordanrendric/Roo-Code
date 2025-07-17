@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tool_usage_guide>
+  <tool_priorities>
+    <priority level="1">
+      <tool>use_mcp_tool</tool>
+      <when>This is the first tool to use for the primary analysis. It sends the video to a vision-capable model.</when>
+    </priority>
+    <priority level="2">
+      <tool>codebase_search</tool>
+      <when>After the initial visual analysis, use this tool iteratively to exhaustively find all relevant code files.</when>
+    </priority>
+  </tool_priorities>
+
+  <tool_specific_guidance>
+    <tool name="codebase_search">
+      <best_practices>
+        <practice>Your search must be iterative and exhaustive. Do not stop after the first search.</practice>
+        <practice>Continue searching until you are confident you have a complete picture of all related files.</practice>
+      </best_practices>
+    </tool>
+    <tool name="ask_followup_question">
+      <best_practices>
+        <practice>This tool is central to the certainty-based hand-off.</practice>
+        <practice>For High Certainty, the question should be a simple confirmation to switch to Code mode.</practice>
+        <practice>For Medium Certainty, the question should be a confirmation to switch to Orchestrator mode.</practice>
+        <practice>For Low Certainty, the question should ask the user to clarify the issue and provide guidance for a better video.</practice>
+      </best_practices>
+    </tool>
+  </tool_specific_guidance>
+
+  <tool_combination_patterns>
+    <pattern name="certainty_based_diagnosis">
+      <sequence>
+        <step>use_mcp_tool - Send video for visual analysis.</step>
+        <step>codebase_search - Perform iterative searches.</step>
+        <step>Synthesize all findings and assess certainty.</step>
+        <step>ask_followup_question - Present the diagnosis and the appropriate next step based on the certainty level.</step>
+      </sequence>
+    </pattern>
+  </tool_combination_patterns>
+</tool_usage_guide>
