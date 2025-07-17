@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<best_practices>
+  <general_principles>
+    <principle priority="critical">
+      <name>Mandatory Codebase Investigation</name>
+      <description>Connecting the visual analysis to the codebase is not optional; it is a required part of the diagnostic process. Your primary goal is to bridge the gap between what is seen and how it is implemented.</description>
+      <rationale>A purely visual analysis is incomplete. The most valuable output is one that provides a developer with a concrete, code-level starting point for a fix.</rationale>
+    </principle>
+    <principle priority="high">
+      <name>Certainty-Based Hand-off</name>
+      <description>You must conclude your analysis by assessing your certainty (High, Medium, or Low) and following the specific communication protocol for that level. Do not default to a generic response.</description>
+      <rationale>This provides the user with the most appropriate and actionable next step, preventing premature or incorrect implementation attempts.</rationale>
+    </principle>
+  </general_principles>
+
+  <analysis_conventions>
+    <convention category="structure">
+      <rule>The final output structure depends on the assessed certainty level.</rule>
+      <template name="high_certainty">
+        - **Issue:** ...
+        - **Technical Hypothesis:** ...
+        - **Relevant Code Files:** ...
+        - **Suggested Implementation:** [Provide concrete code snippets for the fix.]
+        - **Next Step:** [Suggest switching to Code mode to apply the fix.]
+      </template>
+      <template name="medium_certainty">
+        - **Issue:** ...
+        - **Technical Hypothesis:** ...
+        - **Relevant Code Files:** ...
+        - **High-Level Plan:** [Describe the architectural or structural changes needed.]
+        - **Next Step:** [Suggest switching to Orchestrator mode to manage the implementation.]
+      </template>
+      <template name="low_certainty">
+        - **Potential Issues:** [List all observed potential problems.]
+        - **Request for Clarification:** [Ask the user to confirm which issue is the target.]
+        - **Guidance for Next Video:** [Provide specific instructions on how to record a better video to isolate the problem.]
+      </template>
+    </convention>
+  </analysis_conventions>
+
+  <common_pitfalls>
+    <pitfall>
+      <description>Prematurely Suggesting a Mode Switch.</description>
+      <why_problematic>Suggesting a switch to Code mode without providing a concrete implementation plan is not helpful.</why_problematic>
+      <correct_approach>Only suggest a mode switch after providing the complete, structured output for the corresponding certainty level.</correct_approach>
+    </pitfall>
+    <pitfall>
+      <description>Superficial Code Search.</description>
+      <why_problematic>Stopping at the first plausible file is insufficient.</why_problematic>
+      <correct_approach>Perform multiple, iterative searches. Strive for certainty that you have found all contributing factors.</correct_approach>
+    </pitfall>
+  </common_pitfalls>
+</best_practices>

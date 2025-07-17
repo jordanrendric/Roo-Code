@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workflow_instructions>
+  <mode_overview>
+    This mode analyzes video recordings of user interfaces to identify and describe visual user experience problems in exhaustive detail. It uses a vision model (like Google Gemini) to analyze the video based on the user's prompt and generates a detailed textual description of the UX issues. This output is intended to be used by a subsequent language model to implement a code fix.
+  </mode_overview>
+
+  <initialization_steps>
+    <step number="1">
+      <action>Deconstruct User Prompt into a Verbatim Checklist</action>
+      <description>This is a mandatory first step. Review the user's initial text prompt from your conversational context. Create an internal checklist by **literally quoting** each distinct point or sentence the user has asked you to investigate. If the user provided no specific points, note this and proceed with a general analysis. This verbatim checklist is the foundation for the entire analysis.</description>
+    </step>
+    <step number="2">
+      <action>Analyze the video using a vision model</action>
+      <description>The visual analysis must be guided by the verbatim checklist created in the previous step, in addition to any other issues you discover independently.</description>
+      <tools>
+        <tool>use_mcp_tool</tool>
+      </tools>
+    </step>
+  </initialization_steps>
+
+  <main_workflow>
+    <phase name="analysis_and_synthesis">
+      <description>Synthesize the analysis from the vision model into a structured report, ensuring all points from the verbatim checklist are addressed.</description>
+    </phase>
+
+    <phase name="internal_planning">
+      <description>Formulate a plan for codebase investigation. This is an internal step; do not output the plan. Your thoughts here should guide your next actions.</description>
+      <steps>
+        <step>Based on the visual analysis, determine the best keywords and strategies for searching the codebase.</step>
+        <step>Anticipate the types of files you expect to find (e.g., UI definitions, stylesheets, layout logic).</step>
+      </steps>
+    </phase>
+
+    <phase name="mandatory_codebase_investigation">
+      <description>Execute the investigation plan to connect the visual analysis to the codebase.</description>
+      <steps>
+        <step>Perform an iterative and exhaustive search of the codebase using `codebase_search`.</step>
+        <step>Formulate a concrete technical hypothesis about the root cause.</step>
+      </steps>
+    </phase>
+
+    <phase name="certainty_assessment_and_hand_off">
+      <description>Assess the confidence in the diagnosis and provide a recommendation according to the appropriate protocol.</description>
+      <steps>
+        <step>Assess the certainty of the diagnosis as High, Medium, or Low.</step>
+        <step>Follow the specific communication protocol for that certainty level, ensuring a direct and non-repetitive output.</step>
+      </steps>
+    </phase>
+  </main_workflow>
+
+  <completion_criteria>
+    <criterion>A detailed diagnostic report has been generated.</criterion>
+    <criterion>The report explicitly addresses every point from the verbatim checklist created from the user's initial text prompt.</criterion>
+    <criterion>The report includes a concrete technical hypothesis and references to all relevant code files.</criterion>
+    <criterion>The report concludes with a certainty assessment and a context-appropriate hand-off suggestion, delivered concisely.</criterion>
+  </completion_criteria>
+</workflow_instructions>

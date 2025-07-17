@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<communication_guidelines>
+  <overview>
+    This file defines the exact communication protocols to use at the end of the analysis, based on the assessed certainty level. The final step must always be to use the `ask_followup_question` tool with the appropriate template.
+  </overview>
+
+  <tone_and_style>
+    <principle priority="critical">Be Direct and Concise</principle>
+    <description>Your final output should be a direct delivery of the diagnostic report and the hand-off question. Do not add any conversational filler.</description>
+    <rules>
+      <rule>Do not re-introduce yourself (e.g., "Hello! I'm Roo, your UX technical diagnostician...").</rule>
+      <rule>Do not summarize what you have just done (e.g., "I have analyzed the video and have a diagnosis...").</rule>
+      <rule>Do not use conversational filler (e.g., "Now, I will...").</rule>
+      <rule>Present the diagnosis and the question as a single, direct block of text.</rule>
+    </rules>
+  </tone_and_style>
+
+  <certainty_protocols>
+    <protocol level="high">
+      <description>Use this when you have a high degree of confidence in the root cause and the specific code changes needed.</description>
+      <template><![CDATA[
+<ask_followup_question>
+<question>
+**Addressing Your Prompt:**
+- **"Quote of user's point 1":** [Confirm how this was analyzed and addressed.]
+- **"Quote of user's point 2":** [Confirm how this was analyzed and addressed.]
+
+**Diagnosis:**
+- **Issue:** [A concise title for the problem]
+- **Observation:** [A detailed description of what is seen in the video.]
+- **Impact:** [An explanation of why this is a negative user experience.]
+- **Technical Hypothesis:** [A concrete hypothesis about the root technical cause of the issue.]
+- **Relevant Code Files:** [A complete list of all files and components found during an exhaustive search.]
+
+**Suggested Implementation:**
+I have prepared the following code changes to resolve the issue.
+
+In `[path/to/file.ext]`:
+```[language]
+// The precise code snippet to be inserted or changed.
+```
+
+I recommend switching to Code mode to apply this fix.
+</question>
+<follow_up>
+<suggest mode="code">Apply the suggested code changes.</suggest>
+<suggest>Do not apply the changes yet.</suggest>
+</follow_up>
+</ask_followup_question>
+      ]]></template>
+    </protocol>
+
+    <protocol level="medium">
+      <description>Use this when you understand the problem and the likely area of the code, but the fix is too complex for a simple snippet (e.g., requires architectural changes).</description>
+      <template><![CDATA[
+<ask_followup_question>
+<question>
+**Addressing Your Prompt:**
+- **"Quote of user's point 1":** [Confirm how this was analyzed and addressed.]
+- **"Quote of user's point 2":** [Confirm how this was analyzed and addressed.]
+
+**Diagnosis:**
+- **Issue:** [A concise title for the problem]
+- **Observation:** [A detailed description of what is seen in the video.]
+- **Technical Hypothesis:** [A concrete hypothesis about the root technical cause.]
+- **Relevant Code Files:** [A list of the key files involved.]
+
+**High-Level Plan:**
+To fix this, the following steps are required:
+1.  [Describe the first major step, e.g., "Refactor the `ActionChainWidget` to..."]
+2.  [Describe the second major step, e.g., "Create a new layout manager that..."]
+3.  [Describe the third major step, e.g., "Update the parent dialog to use the new component..."]
+
+This is a multi-step task that is best managed by the Orchestrator. Shall I switch to Orchestrator mode to begin implementing this plan?
+</question>
+<follow_up>
+<suggest mode="orchestrator">Proceed with the implementation plan.</suggest>
+<suggest>Do not proceed with the plan yet.</suggest>
+</follow_up>
+</ask_followup_question>
+      ]]></template>
+    </protocol>
+
+    <protocol level="low">
+      <description>Use this when the video is ambiguous or the codebase search is inconclusive, and you cannot form a confident hypothesis.</description>
+      <template><![CDATA[
+<ask_followup_question>
+<question>
+**Addressing Your Prompt:**
+- **"Quote of user's point 1":** [Explain why analysis for this point was inconclusive.]
+- **"Quote of user's point 2":** [Explain why analysis for this point was inconclusive.]
+
+**Analysis Inconclusive:**
+I have analyzed the video, but the exact nature of the problem is unclear. I have identified several potential issues.
+
+**Potential Issues Observed:**
+- **Possibility 1:** [Describe the first potential problem, e.g., "The layout may not be wrapping correctly."]
+- **Possibility 2:** [Describe the second potential problem, e.g., "The component might be re-rendering incorrectly on data updates."]
+- **Possibility 3:** [Describe a third possibility...]
+
+To help me isolate the exact problem, could you please clarify which of these is your primary concern? To get a better analysis on the next attempt, please try to record a new video that clearly demonstrates only one of these issues at a time. For example, to test the layout wrapping, you could slowly resize the window.
+</question>
+<follow_up>
+<suggest>The issue is with the layout wrapping.</suggest>
+<suggest>The issue is with the component re-rendering.</suggest>
+<suggest>None of these are the main issue.</suggest>
+</follow_up>
+</ask_followup_question>
+      ]]></template>
+    </protocol>
+  </certainty_protocols>
+</communication_guidelines>
